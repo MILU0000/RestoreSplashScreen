@@ -15,9 +15,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    permissions: 
-      contents: write
-
     steps:
       - uses: actions/checkout@v3
       - name: set up JDK 17
@@ -82,5 +79,5 @@ jobs:
           name: ${{ github.ref }}
           tag_name: ${{ env.RELEASE_TAG_NAME }}
           repository: MILU0000/test
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           files: "app/build/outputs/apk/app/release/*.apk"
