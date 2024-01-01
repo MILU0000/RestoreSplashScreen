@@ -47,11 +47,12 @@ jobs:
       - name: Display APK Hashes
         run: |
           apk=${{ env.APK_FILE }}
-          echo "### APK File Hashes" >> $GITHUB_STEP_SUMMARY
-          echo "File: $apk" >> $GITHUB_STEP_SUMMARY
-          echo "SHA256: $(sha256sum $apk | awk '{ print $1 }')" >> $GITHUB_STEP_SUMMARY
-          echo "SHA1: $(sha1sum $apk | awk '{ print $1 }')" >> $GITHUB_STEP_SUMMARY
-          echo "MD5: $(md5sum $apk | awk '{ print $1 }')" >> $GITHUB_STEP_SUMMARY
+          echo "### APK Hashes" >> $GITHUB_STEP_SUMMARY
+          echo "| Hash Type | Hash Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| SHA256 | \`$(sha256sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| SHA1 | \`$(sha1sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| MD5 | \`$(md5sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
 
 
       - name: Upload CI Artifact
