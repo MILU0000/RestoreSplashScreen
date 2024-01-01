@@ -22,7 +22,7 @@ sweetProperty {
                 "local.properties",
                 isAddDefault = true
             )
-            permanentKeyValues(
+            permanentKeyValues( 
                 "KEYSTORE_PATH" to "",
                 "KEYSTORE_PASS" to "",
                 "KEY_ALIAS" to "",
