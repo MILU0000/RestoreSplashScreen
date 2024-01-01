@@ -7,6 +7,7 @@ on:
       - 'v*'
     paths-ignore:
       - 'README.md'
+      - 'doc/*'
       - 'app/gradle.properties'
       - '.github/workflows/android.yml'
   pull_request:
@@ -52,9 +53,6 @@ jobs:
       - name: Grant Execute Permission to gradlew
         run: chmod +x gradlew
 
-      - name: Build Project
-        run: bash ./gradlew build
-
       - name: Get Release Tag Name
         run: |
           echo "RELEASE_TAG_NAME=$(bash ./gradlew -q getVersionCode 2>&1 | tail -n 1)" >> "$GITHUB_ENV"
@@ -62,7 +60,7 @@ jobs:
       - name: Build with Gradle and Sign
         run: |
           echo ${{ secrets.SIGNING_KEY }} | base64 -d > keystore.jks
-          bash ./gradlew assemble
+          bash ./gradlew assembleCI
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASS: ${{ secrets.KEY_STORE_PASSWORD }}
