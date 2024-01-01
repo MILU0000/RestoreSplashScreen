@@ -143,4 +143,4 @@ fun getGitHeadRefsSuffix(project: Project): String {
         println("WARN: .git/HEAD does NOT exist")
         return ""
     }
-}
+} 
