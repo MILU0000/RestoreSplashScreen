@@ -34,4 +34,4 @@ sweetProperty {
 }
 rootProject.name = "RestoreSplashScreen"
 include(":app")
-include(":blockmiui")
+include(":blockmiui") 
