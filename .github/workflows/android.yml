@@ -40,12 +40,26 @@ jobs:
           KEY_ALIAS: ${{ secrets.ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
+      - name: Find APKs
+        run: |
+          echo "APK_FILE=$(find app/build/outputs/apk/CI -name '*.apk')" >> $GITHUB_ENV
+
+      - name: Display APK Hashes
+        run: |
+          apk=${{ env.APK_FILE }}
+          echo "### APK File Hashes" >> $GITHUB_STEP_SUMMARY
+          echo "File: $apk" >> $GITHUB_STEP_SUMMARY
+          echo "SHA256: $(sha256sum $apk | awk '{ print $1 }')" >> $GITHUB_STEP_SUMMARY
+          echo "SHA1: $(sha1sum $apk | awk '{ print $1 }')" >> $GITHUB_STEP_SUMMARY
+          echo "MD5: $(md5sum $apk | awk '{ print $1 }')" >> $GITHUB_STEP_SUMMARY
+
+
       - name: Upload CI Artifact
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: RestoreSplashScreen_Release
-          path: "app/build/outputs/apk/CI/release/*.apk"
+          path: ${{ env.APK_FILE }}
 
       - name: Get Release Tag Name
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
@@ -56,9 +70,10 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         uses: softprops/action-gh-release@v1
         with:
-          draft: true
+          prerelease: true
           name: ${{ github.ref_name }}
           tag_name: ${{ env.RELEASE_TAG_NAME }}
+          body: "This is a pre-release version automatically created by GitHub Actions, awaiting developer's addition of the changelog."
           repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
           token: ${{ secrets.GH_TOKEN }}
-          files: "app/build/outputs/apk/app/release/*.apk"
+          files: ${{ env.APK_FILE }}
