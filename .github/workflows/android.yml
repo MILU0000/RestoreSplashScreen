@@ -42,7 +42,7 @@ jobs:
 
       - name: Find APKs
         run: |
-          echo "APK_FILE=$(find app/build/outputs/apk/CI -name '*.apk')" >> $GITHUB_ENV
+          echo "APK_FILE=$(find app/build/outputs/apk/CI -name '*.apk' | head -n 1)" >> $GITHUB_ENV
 
       - name: Display APK Hashes
         run: |
