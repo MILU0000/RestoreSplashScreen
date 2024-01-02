@@ -44,12 +44,12 @@ jobs:
           KEY_ALIAS: ${{ secrets.ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Find APKs
+      - name: Find APK
         run: |
           if [[ ${{ github.ref }} == refs/tags/v* ]]; then
-            echo "APK_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
-          else
             echo "APK_FILE=$(find app/build/outputs/apk/app/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
+          else
+            echo "APK_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
           fi
           
       - name: Upload CI Artifact
