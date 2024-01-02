@@ -70,8 +70,11 @@ jobs:
             ```
             ${{ github.event.head_commit.message }}
             ```by `${{ github.event.head_commit.author.name }}`
+            
             See commit detail [here](${{ github.event.head_commit.url }})
             See build detail [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            # 启动遮罩进化
           COMMIT_URL: ${{ github.event.head_commit.url }}
         run: |
           ESCAPED=`python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))'`
@@ -91,6 +94,7 @@ jobs:
           name: ${{ github.ref_name }}
           tag_name: ${{ env.RELEASE_TAG_NAME }}
           body: "This is a pre-release version automatically created by GitHub Actions, awaiting developer's addition of the changelog."
-          repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
+          # repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
+          repository: MILU0000/test
           token: ${{ secrets.GH_TOKEN }}
           files: ${{ env.APK_FILE }}
