@@ -33,7 +33,11 @@ jobs:
       - name: Build with Gradle and Sign
         run: |
           echo ${{ secrets.SIGNING_KEY }} | base64 -d > keystore.jks
-          bash ./gradlew assemble
+          if [[ ${{ github.ref }} == refs/tags/v* ]]; then
+            bash ./gradlew assembleApp
+          else
+            bash ./gradlew assembleCI
+          fi
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASS: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -42,18 +46,21 @@ jobs:
 
       - name: Find APKs
         run: |
-          echo "CI_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
-          echo "APP_FILE=$(find app/build/outputs/apk/app/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
-
+          if [[ ${{ github.ref }} == refs/tags/v* ]]; then
+            echo "APK_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
+          else
+            echo "APK_FILE=$(find app/build/outputs/apk/app/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
+          fi
+          
       - name: Upload CI Artifact
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
           name: RestoreSplashScreen_Release
-          path: ${{ env.CI_FILE }}
+          path: ${{ env.APK_FILE }}
 
       - name: Post Artifacts to Telegram
-        # if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         env:
           TG_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -71,7 +78,7 @@ jobs:
         run: |
           ESCAPED=`python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))'`
           curl -v "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMediaGroup?chat_id=${TG_CHAT_ID}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Fci%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
-           -F ci="@${{ env.CI_FILE }}"
+           -F ci="@${{ env.APK_FILE }}"
 
       - name: Get Release Tag Name
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
@@ -86,20 +93,18 @@ jobs:
           name: ${{ github.ref_name }}
           tag_name: ${{ env.RELEASE_TAG_NAME }}
           body: "This is a pre-release version automatically created by GitHub Actions, awaiting developer's addition of the changelog."
-          # repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
-          repository: MILU0000/test
+          repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
           token: ${{ secrets.GH_TOKEN }}
-          files: ${{ env.APP_FILE }}
+          files: ${{ env.APK_FILE }}
 
       - name: Display APK Hashes
         run: |
           if [[ ${{ github.ref }} == refs/tags/v* ]]; then
-            apk=${{ env.APP_FILE }}
             echo "Building Type: Release Version" >> $GITHUB_STEP_SUMMARY
           else
-            apk=${{ env.CI_FILE }}
             echo "Building Type: CI Build Version" >> $GITHUB_STEP_SUMMARY
           fi
+          apk=${{ env.APK_FILE }}
           echo "### APK Hashes" >> $GITHUB_STEP_SUMMARY
           echo "| Hash Type | Hash Value |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
