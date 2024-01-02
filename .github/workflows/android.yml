@@ -10,8 +10,6 @@ on:
       - 'doc/*'
       - 'app/gradle.properties'
       - '.github/workflows/android.yml'
-  pull_request:
-    branches: ["master"]
 
 jobs:
   build:
