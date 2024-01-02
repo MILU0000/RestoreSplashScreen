@@ -42,24 +42,15 @@ jobs:
 
       - name: Find APKs
         run: |
-          echo "APK_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
-
-      - name: Display APK Hashes
-        run: |
-          apk=${{ env.APK_FILE }}
-          echo "### APK Hashes" >> $GITHUB_STEP_SUMMARY
-          echo "| Hash Type | Hash Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| SHA256 | \`$(sha256sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| SHA1 | \`$(sha1sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| MD5 | \`$(md5sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
+          echo "CI_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
+          echo "APP_FILE=$(find app/build/outputs/apk/app/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
 
       - name: Upload CI Artifact
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
           name: RestoreSplashScreen_Release
-          path: ${{ env.APK_FILE }}
+          path: ${{ env.CI_FILE }}
 
       - name: Post Artifacts to Telegram
         # if: ${{ !startsWith(github.ref, 'refs/tags/') }}
@@ -75,12 +66,12 @@ jobs:
             See commit detail [here](${{ github.event.head_commit.url }})
             See build detail [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            \\# 启动遮罩进化
+            \# 启动遮罩进化
           COMMIT_URL: ${{ github.event.head_commit.url }}
         run: |
           ESCAPED=`python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))'`
           curl -v "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMediaGroup?chat_id=${TG_CHAT_ID}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Fci%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
-           -F ci="@${{ env.APK_FILE }}"
+           -F ci="@${{ env.CI_FILE }}"
 
       - name: Get Release Tag Name
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
@@ -98,4 +89,20 @@ jobs:
           # repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
           repository: MILU0000/test
           token: ${{ secrets.GH_TOKEN }}
-          files: ${{ env.APK_FILE }}
+          files: ${{ env.APP_FILE }}
+
+      - name: Display APK Hashes
+        run: |
+          if [[ ${{ github.ref }} == refs/tags/v* ]]; then
+            apk=${{ env.APP_FILE }}
+            echo "Building Type: Release Version" >> $GITHUB_STEP_SUMMARY
+          else
+            apk=${{ env.CI_FILE }}
+            echo "Building Type: CI Build Version" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "### APK Hashes" >> $GITHUB_STEP_SUMMARY
+          echo "| Hash Type | Hash Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| SHA256 | \`$(sha256sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| SHA1 | \`$(sha1sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| MD5 | \`$(md5sum $apk | awk '{ print $1 }')\` |" >> $GITHUB_STEP_SUMMARY
