@@ -54,7 +54,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
-          name: RestoreSplashScreen_Release
+          name: RestoreSplashScreen_CI_Release
           path: ${{ env.APK_FILE }}
 
       - name: Post Artifacts to Telegram
@@ -91,7 +91,8 @@ jobs:
           name: ${{ github.ref_name }}
           tag_name: ${{ env.RELEASE_TAG_NAME }}
           body: "This is a pre-release version automatically created by GitHub Actions, awaiting developer's addition of the changelog."
-          repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
+          # repository: Xposed-Modules-Repo/com.gswxxn.restoresplashscreen
+          repository: MILU0000/test
           token: ${{ secrets.GH_TOKEN }}
           files: ${{ env.APK_FILE }}
 
