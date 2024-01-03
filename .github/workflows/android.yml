@@ -27,7 +27,7 @@ jobs:
         with:
           java-version: "20"
           distribution: "temurin"
-          # cache: gradle
+          cache: gradle
 
       - name: Build with Gradle and Sign
         run: |
