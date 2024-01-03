@@ -31,20 +31,18 @@ jobs:
       - name: Build with Gradle and Sign
         run: |
           echo ${{ secrets.SIGNING_KEY }} | base64 -d > keystore.jks
-          bash ./gradlew assembleRelease
+          if [[ ${{ github.ref }} == refs/tags/v* ]]; then
+            ./gradlew :app:assembleAppRelease
+            echo "APK_FILE=$(find app/build/outputs/apk/app/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
+          else
+            ./gradlew :app:assembleCIRelease
+            echo "APK_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
+          fi
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASS: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Find APK
-        run: |
-          if [[ ${{ github.ref }} == refs/tags/v* ]]; then
-            echo "APK_FILE=$(find app/build/outputs/apk/app/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
-          else
-            echo "APK_FILE=$(find app/build/outputs/apk/CI/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
-          fi
           
       - name: Upload CI Artifact
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
